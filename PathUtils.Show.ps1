@@ -20,6 +20,43 @@ $env_types_map = @{
     'User' = [System.EnvironmentVariableTarget]::User
 }
 
+function Write-HostMulticolor {
+    param (
+        [ValidateNotNullOrEmpty()]
+        [ValidateSet('Black', 'DarkBlue', 'DarkGreen', 'DarkCyan',
+                     'DarkRed', 'DarkMagenta', 'DarkYellow', 'Gray',
+                     'DarkGray', 'Blue', 'Green', 'Cyan', 'Red',
+                     'Magenta', 'Yellow', 'White', 'ColorDefault')]
+        [String[]]$colors,
+
+        [ValidateNotNullOrEmpty()]
+        [String[]]$messages,
+
+        [Switch]$single = $false
+    )
+
+    if ($single) {
+        Write-Host -ForegroundColor:$colors[0] $messages
+        return
+    }
+
+    if ($colors.Count -ne $messages.Count) {
+        throw 'Number of colors and messages must be equal!'
+    }
+
+    for ($i = 0; $i -lt $colors.Count; $i++) {
+        if ($colors[$i] -eq 'ColorDefault') {
+            $colors[$i] = (get-host).ui.rawui.ForegroundColor
+        }
+    }
+    
+    for ($i = 0; $i -lt ($messages.Count - 1); $i++) {
+        Write-Host -ForegroundColor:$colors[$i] ($messages[$i], "") -NoNewline
+    }
+
+    Write-Host -ForegroundColor:$colors[$colors.Count - 1] $messages[$messages.Count - 1]
+}
+
 [string]$current_path = [System.Environment]::GetEnvironmentVariable('Path', $env_types_map[$env_type])
 [string[]]$paths = $current_path.Split(';', [System.StringSplitOptions]::RemoveEmptyEntries)
 
@@ -30,18 +67,26 @@ foreach ($path in $paths) {
     }
 }
 
+[hashtable]$paths_occurrences  = @{}
+foreach ($path in $paths) {
+    $paths_occurrences[$path]++
+}
+
 switch ($view) {
     'Raw' {
         Write-Output $current_path
     }
 
     'List' {
-        Write-Host "total $($paths.Length) items"
+        Write-Host "Total $($paths.Length) items" -ForegroundColor:DarkGreen
         foreach ($path in $paths) {
-            if ($inaccessible_paths -contains $path) {
-                Write-Host -ForegroundColor:Red "! $path"
+            if ($paths_occurrences[$path] -gt 1) {
+                Write-HostMulticolor -colors:Yellow -messages:("#", $path) -single
+            }
+            elseif ($inaccessible_paths -contains $path) {
+                Write-HostMulticolor -colors:Red -messages:("!", $path) -single
             } else {
-                Write-Host "* $path"
+                Write-HostMulticolor -colors:Green,ColorDefault -messages:("*", $path)
             }
         }
     }
