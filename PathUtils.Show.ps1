@@ -74,7 +74,26 @@ foreach ($path in $paths) {
 
 switch ($view) {
     'Raw' {
-        Write-Output $current_path
+        $tokens = [regex]::split($current_path, '(;+)')
+
+        for ($i = 0; $i -lt $tokens.Count; $i++) {
+            if ($tokens[$i].Contains(';')) {
+                if ($tokens[$i].length -gt 1 -or
+                    $i -eq 0 -or
+                    $i -eq $tokens.Count - 2
+                ) {
+                    Write-Host -BackgroundColor:Red -ForegroundColor:White $tokens[$i] -NoNewline
+                }
+                else {
+                    Write-Host -BackgroundColor:DarkGreen -ForegroundColor:White $tokens[$i] -NoNewline
+                }
+            }
+            else {
+                Write-Host $tokens[$i] -NoNewline
+            }
+        }
+
+        Write-Host
     }
 
     'List' {
