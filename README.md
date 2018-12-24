@@ -11,11 +11,10 @@ Prints the `Path` variable.
 * Specifying `-view` param as `List` (by default), the `Path` is splitted and
   displayed in a list. Specifying `-view` param as `Raw`, the `Path` displayed
   as a string value, as is.
-* When `-view:List`, it also prints the total information about count of paths
-  before the list.
-* When `-view:List`, it also understands which paths do not exist. The existent
-  paths are marked by `*`; the nonexistent ones are colored in red, and marked
-  by `!`.
+* When `-view:List`, script prints the total information about count of paths
+  before the list. It also Marks existent paths with `*` (the mark is green),
+  nonexistent as `!` (the whole line is red),  and duplicated as `#` (the
+  whole line is yellow).
 
 ## PathUtils.Add.ps1
 
